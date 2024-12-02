@@ -1,0 +1,118 @@
+﻿@{
+    ViewData["Title"] = "List";
+}
+
+<h1>Oyun Odaları</h1>
+
+<div id="room-list">
+    <!-- Odalar burada dinamik olarak listelenecek -->
+</div>
+<div id="no-room-message">
+    <!-- Odalar burada dinamik olarak listelenecek -->
+</div>
+<button id="create-room-button" class="create-room">
+    Oda Oluştur
+</button>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("https://localhost:7021/hubs/roomHub")
+        .build();
+
+    const userRoomConnection = new signalR.HubConnectionBuilder()
+        .withUrl("https://localhost:7021/hubs/userRoomHub")
+        .build();
+
+        try {
+            await connection.start(); // Bağlantıyı başlat
+            console.log("Bağlantı başarılı!");
+            await userRoomConnection.start(); // İkinci bağlantıyı başlat
+            console.log("Kullanıcı odası bağlantısı başarılı!");
+                        // Oda listesini al
+            const rooms = await connection.invoke("RoomList");
+            const roomListDiv = document.getElementById('room-list');
+            if (rooms.length === 0) {
+                const noRoomDiv = document.getElementById('no-room-message');
+                noRoomDiv.className = 'room';
+                noRoomDiv.textContent = 'ODA YOK';
+            } else {
+                rooms.forEach(function(room) {
+                    roomDiv.className = 'room';
+                    roomDiv.innerHTML = `<h2>${room.name}</h2><p>${room.description}</p>`;
+                    roomListDiv.appendChild(roomDiv);
+                });
+            }
+            // RoomAdded olayını dinle
+            connection.on("CreateRoom", (room) => {
+                console.log(room);
+                const roomListDiv = document.getElementById('room-list');
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'room';
+                roomDiv.id = `${room.id}`;
+                roomDiv.innerHTML = `
+                    <h2>${room.name}</h2>
+                    <button class="btn btn-primary join-room-button" data-room-id="${room.id}">Katıl</button>`;
+                roomListDiv.appendChild(roomDiv);
+                 const noRoomMessageDiv = document.getElementById('no-room-message');
+                if (noRoomMessageDiv) {
+                    noRoomMessageDiv.remove();
+                }
+            });
+            // RoomAdded olayını dinle
+            connection.on("InRoomUser", (roomUsers) => {
+                const roomListDiv = document.getElementById(`${roomUsers.RoomId}`);
+                roomDiv.innerHTML = `<p>${roomUsers.FirstPlayerUserId}</p>`;
+                if (roomUsers.SecondPlayerUserId != undefined)
+                {
+                   roomDiv.innerHTML = `<p>${roomUsers.SecondPlayerUserId}</p>`;
+                }
+                roomListDiv.appendChild(roomDiv);
+            });
+
+        } catch (err) {
+            console.error(err.toString());
+        }
+    });
+
+    document.getElementById('create-room-button').addEventListener('click', async function() {
+        const roomName = prompt("Oda ismini girin:");
+        if (!roomName) {
+            console.error("Oda ismi boş bırakılamaz.");
+            return;
+        }
+
+        const createConnection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:7021/hubs/roomHub")
+            .build();
+
+        try {
+            await createConnection.start();
+            await createConnection.invoke("CreateRoom", roomName);
+        } catch (err) {
+            console.error(err.toString());
+        }
+    });
+
+const joinRoomButtons = document.getElementsByClassName('join-room-button');
+Array.from(joinRoomButtons).forEach(button => {
+    button.addEventListener('click', async function() {
+        const roomId = this.getAttribute('data-room-id');
+        console.log(`Odaya katıl: ${roomId}`);
+        // Burada odaya katılma işlemini gerçekleştirin
+        try {
+            const createConnection = new signalR.HubConnectionBuilder()
+                .withUrl("https://localhost:7021/hubs/userRoomHub")
+                .build();
+
+            await createConnection.start();
+            await createConnection.invoke("InRoomUser", roomId);
+        } catch (err) {
+            console.error(err.toString());
+        }
+    });
+});
+
+
+
+</script>

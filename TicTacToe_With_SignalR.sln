@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35506.116 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{B762E9B8-C01F-4651-B2B1-D31CCE5B87C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api", "Api", "{4D6F91A6-9990-4B7A-80F0-FC48AA957485}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{29D297B5-2759-421E-8E62-65A597202EBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicTacToe_With_SignalR_Api", "TicTacToe_With_SignalR_Api\TicTacToe_With_SignalR_Api.csproj", "{7BD93DD3-067B-4816-8263-DFE1334A093D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicTacToe_With_SignalR_Web", "TicTacToe_With_SignalR_Web\TicTacToe_With_SignalR_Web.csproj", "{5C73D1B4-9910-4316-A6DD-B1236E786C03}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7BD93DD3-067B-4816-8263-DFE1334A093D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BD93DD3-067B-4816-8263-DFE1334A093D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BD93DD3-067B-4816-8263-DFE1334A093D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BD93DD3-067B-4816-8263-DFE1334A093D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C73D1B4-9910-4316-A6DD-B1236E786C03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C73D1B4-9910-4316-A6DD-B1236E786C03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C73D1B4-9910-4316-A6DD-B1236E786C03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C73D1B4-9910-4316-A6DD-B1236E786C03}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4D6F91A6-9990-4B7A-80F0-FC48AA957485} = {B762E9B8-C01F-4651-B2B1-D31CCE5B87C8}
+		{29D297B5-2759-421E-8E62-65A597202EBE} = {B762E9B8-C01F-4651-B2B1-D31CCE5B87C8}
+		{7BD93DD3-067B-4816-8263-DFE1334A093D} = {4D6F91A6-9990-4B7A-80F0-FC48AA957485}
+		{5C73D1B4-9910-4316-A6DD-B1236E786C03} = {29D297B5-2759-421E-8E62-65A597202EBE}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,14 @@
+.room {
+    border: 2px solid lightblue;
+    cursor: pointer;
+    display: block;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.room:hover {
+    background-color: lightblue;
+    color: darkblue;
+} 

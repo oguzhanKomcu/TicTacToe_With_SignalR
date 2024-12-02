@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="mb-3">
+    <label for="registrationInput" class="form-label">Kayıt Bilgileri</label>
+    <input type="text" class="form-control" id="registrationInput" placeholder="Kayıt bilgilerinizi girin">
+</div>
+<button class="btn btn-primary" id="submitButton">Gönder</button>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:7021/hubs/userHub") // SignalR hub URL'si
+            .build();
+
+        await connection.start(); // Bağlantıyı başlat
+        console.log("Bağlantı başarılı!");
+
+        document.getElementById('submitButton').onclick = async () => {
+            const input = document.getElementById('registrationInput').value;
+            const response = await sendData(input, connection); // sendData fonksiyonu ile veriyi gönder
+            if (response.success) {
+                window.location.href = '/Room/List'; // Başarılı sonuçta yönlendirme
+            }
+        };
+    });
+
+    // sendData fonksiyonu
+    async function sendData(data, connection) {
+        try {
+            const result = await connection.invoke("RegisterUser", data); // "Create" metodunu çağır
+            console.error('Sonuc:', result);
+            return { success: result }; // Sonucu döndür
+        } catch (error) {
+            console.error('Hata:', error);
+            return { success: false }; // Hata durumunda false döndür
+        }
+    }
+</script>
+
+
+
+    
