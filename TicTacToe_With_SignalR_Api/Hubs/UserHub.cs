@@ -13,13 +13,13 @@ namespace TicTacToe_With_SignalR.Hubs
             _context = context;
         }
 
-        public async Task<string> RegisterUser(string userName)
+        public async Task<string> RegisterUser(string userName, string userId)
         {
             var user = new User
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = userName,
-                ConnectionId = Context.ConnectionId
+                ConnectionId = userId
             };
 
             _context.Users.Add(user);

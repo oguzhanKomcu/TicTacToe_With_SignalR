@@ -15,12 +15,20 @@ namespace TicTacToe_With_SignalR_Api.Hubs
         }
 
 
-        public async Task<string> InRoomUser(string roomId)
+        public async Task<string> InRoomUser(string roomId, string userId)
         {
-            var room = _context.RoomUsers.FirstOrDefault(x=> x.RoomId == roomId && x.FirstPlayerUserId != null );
+            var room = _context.RoomUsers.FirstOrDefault(x=> x.RoomId == roomId && x.FirstPlayerUserId != null && x.FirstPlayerUserId != Context.ConnectionId );
+            var roomResult = _context.RoomUsers.FirstOrDefault(x=> x.RoomId == roomId && x.FirstPlayerUserId != null && x.SecondPlayerUserId !=null );
+
+            if (roomResult != null)
+            {
+                return "false";
+            }
+
             if (room != null)
             {
-                room.SecondPlayerUserId = Context.ConnectionId;
+                //connectionId coktrol et
+                room.SecondPlayerUserId = userId;
                  _context.RoomUsers.Update(room);
                 await Clients.All.SendAsync("InRoomUser", room);
             }
@@ -28,8 +36,7 @@ namespace TicTacToe_With_SignalR_Api.Hubs
             {
                 RoomUser roomUser = new RoomUser();
                 roomUser.RoomId = roomId;
-                roomUser.FirstPlayerUserId = Context.ConnectionId;
-                roomUser.SecondPlayerUserId = "";
+                roomUser.FirstPlayerUserId = userId;
 
                 var result = _context.RoomUsers.Add(roomUser);
                 await Clients.All.SendAsync("InRoomUser", roomUser);
@@ -40,6 +47,14 @@ namespace TicTacToe_With_SignalR_Api.Hubs
 
             return "succes";
 
+        }
+    }
+
+    public class CustomUserIdProvider : IUserIdProvider
+    {
+        public string GetUserId(HubConnectionContext connection)
+        {
+            return connection.User?.Identity?.Name; // Kullanıcı adını veya başka bir benzersiz kimliği döndürün
         }
     }
 }

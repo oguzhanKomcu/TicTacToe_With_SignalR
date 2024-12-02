@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "Create";
 }
 
@@ -10,36 +9,82 @@
 <button class="btn btn-primary" id="submitButton">Gönder</button>
 
 <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7021/hubs/userHub") // SignalR hub URL'si
-            .build();
 
-        await connection.start(); // Bağlantıyı başlat
-        console.log("Bağlantı başarılı!");
 
-        document.getElementById('submitButton').onclick = async () => {
-            const input = document.getElementById('registrationInput').value;
-            const response = await sendData(input, connection); // sendData fonksiyonu ile veriyi gönder
-            if (response.success) {
-                window.location.href = '/Room/List'; // Başarılı sonuçta yönlendirme
+        document.addEventListener("DOMContentLoaded", async () => {
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("https://localhost:7021/hubs/userHub") // SignalR hub URL'si
+                .build();
+
+            await connection.start(); // Bağlantıyı başlat
+            console.log("Bağlantı başarılı!");
+
+            document.getElementById('submitButton').onclick = async () => {
+                const input = document.getElementById('registrationInput').value;
+                        function setCookie(name, value, days) {
+                 let expires = "";
+                 if (days) {
+                     const date = new Date();
+                     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                     expires = "; expires=" + date.toUTCString();
+                 }
+                 document.cookie = name + "=" + (value || "") + expires + "; path=/";
+                 }
+
+               // Benzersiz bir kullanıcı kimliği oluştur veya mevcut olanı al
+          let userId = getCookie(input);
+            if (!userId) {
+                userId = generateUUID(); // UUID oluşturma fonksiyonunu kendiniz tanımlayın
+                setCookie(input, userId, 365); // 1 yıl boyunca geçerli olacak şekilde çerezi ayarla
+                }
+                const response = await sendData(input, connection,userId); // sendData fonksiyonu ile veriyi gönder
+                if (response.success) {
+                    window.location.href = '/Room/List'; // Başarılı sonuçta yönlendirme
+                }
+            };
+        });
+
+        // sendData fonksiyonu
+        async function sendData(data, connection,userId) {
+            try {
+                const result = await connection.invoke("RegisterUser", data,userId); // "Create" metodunu çağır
+                console.error('Sonuc:', result);
+                return { success: result }; // Sonucu döndür
+            } catch (error) {
+                console.error('Hata:', error);
+                return { success: false }; // Hata durumunda false döndür
             }
-        };
-    });
-
-    // sendData fonksiyonu
-    async function sendData(data, connection) {
-        try {
-            const result = await connection.invoke("RegisterUser", data); // "Create" metodunu çağır
-            console.error('Sonuc:', result);
-            return { success: result }; // Sonucu döndür
-        } catch (error) {
-            console.error('Hata:', error);
-            return { success: false }; // Hata durumunda false döndür
         }
+       function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    function generateUUID() {
+        // RFC4122 versiyon 4 uyumlu bir UUID oluşturur
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+        function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
     }
 </script>
 
 
 
-    
+

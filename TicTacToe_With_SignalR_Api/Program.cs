@@ -2,6 +2,7 @@ using TicTacToe_With_SignalR.Data;
 using Microsoft.EntityFrameworkCore;
 using TicTacToe_With_SignalR.Hubs;
 using TicTacToe_With_SignalR_Api.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -25,7 +26,12 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+    builder.Services.AddAuthentication(options =>
+    {
+        // Kimlik doğrulama seçeneklerinizi burada ayarlayın
+    });
 
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 var app = builder.Build();
 
 app.UseCors(ApiCorsPolicy);

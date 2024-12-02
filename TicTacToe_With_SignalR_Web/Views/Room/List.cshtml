@@ -15,104 +15,161 @@
 </button>
 
 <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("https://localhost:7021/hubs/roomHub")
-        .build();
+         document.addEventListener("DOMContentLoaded", async () => {
+             debugger
+             let userId = getCookie(input);
+              if (!userId) {
+                  userId = generateUUID(); // UUID oluşturma fonksiyonunu kendiniz tanımlayın
+                  localStorage.setItem('userId', userId);
+              }
 
-    const userRoomConnection = new signalR.HubConnectionBuilder()
-        .withUrl("https://localhost:7021/hubs/userRoomHub")
-        .build();
+             const connection = new signalR.HubConnectionBuilder()
+             .withUrl("https://localhost:7021/hubs/roomHub", {
+                 accessTokenFactory: () => userId // Bu kimliği sunucuya gönder
+             })
+             .build();
 
-        try {
-            await connection.start(); // Bağlantıyı başlat
-            console.log("Bağlantı başarılı!");
-            await userRoomConnection.start(); // İkinci bağlantıyı başlat
-            console.log("Kullanıcı odası bağlantısı başarılı!");
-                        // Oda listesini al
-            const rooms = await connection.invoke("RoomList");
-            const roomListDiv = document.getElementById('room-list');
-            if (rooms.length === 0) {
-                const noRoomDiv = document.getElementById('no-room-message');
-                noRoomDiv.className = 'room';
-                noRoomDiv.textContent = 'ODA YOK';
-            } else {
-                rooms.forEach(function(room) {
-                    roomDiv.className = 'room';
-                    roomDiv.innerHTML = `<h2>${room.name}</h2><p>${room.description}</p>`;
-                    roomListDiv.appendChild(roomDiv);
-                });
-            }
-            // RoomAdded olayını dinle
-            connection.on("CreateRoom", (room) => {
-                console.log(room);
-                const roomListDiv = document.getElementById('room-list');
-                const roomDiv = document.createElement('div');
-                roomDiv.className = 'room';
-                roomDiv.id = `${room.id}`;
-                roomDiv.innerHTML = `
-                    <h2>${room.name}</h2>
-                    <button class="btn btn-primary join-room-button" data-room-id="${room.id}">Katıl</button>`;
-                roomListDiv.appendChild(roomDiv);
-                 const noRoomMessageDiv = document.getElementById('no-room-message');
-                if (noRoomMessageDiv) {
-                    noRoomMessageDiv.remove();
-                }
-            });
-            // RoomAdded olayını dinle
-            connection.on("InRoomUser", (roomUsers) => {
-                const roomListDiv = document.getElementById(`${roomUsers.RoomId}`);
-                roomDiv.innerHTML = `<p>${roomUsers.FirstPlayerUserId}</p>`;
-                if (roomUsers.SecondPlayerUserId != undefined)
-                {
-                   roomDiv.innerHTML = `<p>${roomUsers.SecondPlayerUserId}</p>`;
-                }
-                roomListDiv.appendChild(roomDiv);
-            });
+             const userRoomConnection = new signalR.HubConnectionBuilder()
+             .withUrl("https://localhost:7021/hubs/userRoomHub", {
+                 accessTokenFactory: () => userId // Bu kimliği sunucuya gönder
+             })
+             .build();
 
-        } catch (err) {
-            console.error(err.toString());
+
+             try {
+                 await connection.start(); // Bağlantıyı başlat
+                 console.log("Bağlantı başarılı!");
+                 await userRoomConnection.start(); // İkinci bağlantıyı başlat
+                 console.log("Kullanıcı odası bağlantısı başarılı!");
+                             // Oda listesini al
+                 const rooms = await connection.invoke("RoomList");
+                 const roomListDiv = document.getElementById('room-list');
+                 if (rooms.length === 0) {
+                     const noRoomDiv = document.getElementById('no-room-message');
+                     noRoomDiv.className = 'room';
+                     noRoomDiv.textContent = 'ODA YOK';
+                 } else {
+                     rooms.forEach(function(room) {
+                        const roomDiv = document.createElement('div');
+                         roomDiv.className = 'room';
+                         roomDiv.id = `${room.id}`;
+                         roomDiv.innerHTML = `
+                         <h2>${room.name}</h2>
+                         <button class="btn btn-primary join-room-button" id="joinButton" data-room-id="${room.id}">Katıl</button>`;
+                        roomListDiv.appendChild(roomDiv);
+
+                       var joinButton = document.getElementById('joinButton');
+                       joinButton.addEventListener('click', async function() {
+
+                           const roomId = this.getAttribute('data-room-id');
+                           console.log(`Odaya katıl: ${roomId}`);
+                           // Burada odaya katılma işlemini gerçekleştirin
+                           try {
+                               const createConnection = new signalR.HubConnectionBuilder()
+                                   .withUrl("https://localhost:7021/hubs/userRoomHub")
+                                   .build();
+
+                               await createConnection.start();
+                               await createConnection.invoke("InRoomUser", roomId,userId);
+                           } catch (err) {
+                               console.error(err.toString());
+                           }
+                       });
+                     });
+                 }
+                 // RoomAdded olayını dinle
+                 connection.on("CreateRoom", (room) => {
+                     console.log(room);
+                     const roomListDiv = document.getElementById('room-list');
+                     const roomDiv = document.createElement('div');
+                     roomDiv.className = 'room';
+                     roomDiv.id = `${room.id}`;
+                     roomDiv.innerHTML = `
+                         <h2>${room.name}</h2>
+                         <button class="btn btn-primary join-room-button" id="joinButton" data-room-id="${room.id}">Katıl</button>`;
+                     roomListDiv.appendChild(roomDiv);
+
+                     const joinButton = roomDiv.querySelector('.join-room-button');
+                     joinButton.addEventListener('click', async function() {
+                     const roomId = this.getAttribute('data-room-id');
+                     console.log(`Odaya katıl: ${roomId}`);
+                     try {
+                         const createConnection = new signalR.HubConnectionBuilder()
+                             .withUrl("https://localhost:7021/hubs/userRoomHub")
+                             .build();
+
+                         await createConnection.start();
+                         var result = await createConnection.invoke("InRoomUser", roomId,userId);
+                         if (result =="false")
+                         {
+                             alert("Oyun Odası Doludur.");
+                         }
+                     } catch (err) {
+                         console.error(err.toString()); }});
+
+                     const noRoomMessageDiv = document.getElementById('no-room-message');
+                     if (noRoomMessageDiv) {
+                         noRoomMessageDiv.remove();
+                     }
+                 });
+
+                  userRoomConnection.on("InRoomUser", (roomUsers) => {
+                     debugger
+                     const roomDiv = document.getElementById(`${roomUsers.roomId}`);
+                      const roomFirstPlayerDiv = document.getElementById(`${roomUsers.firstPlayerUserId}`);
+                     const roomUserDiv = document.createElement('div');
+                     if (roomFirstPlayerDiv  == null)
+                     {
+                         roomUserDiv.innerHTML = `<p id="${roomUsers.firstPlayerUserId}">${roomUsers.firstPlayerUserId}</p>`;
+                  
+                     }
+                     if (roomUserDiv.secondPlayerUserId != undefined)
+                     {
+                           roomUserDiv.innerHTML = `<p>${roomUsers.secondPlayerUserId}</p>`;
+                     }
+                        roomDiv.appendChild(roomUserDiv);
+                 });
+
+             } catch (err) {
+                 console.error(err.toString());
+             }
+         });
+
+         document.getElementById('create-room-button').addEventListener('click', async function() {
+             const roomName = prompt("Oda ismini girin:");
+             if (!roomName) {
+                 console.error("Oda ismi boş bırakılamaz.");
+                 return;
+             }
+
+             const createConnection = new signalR.HubConnectionBuilder()
+                 .withUrl("https://localhost:7021/hubs/roomHub")
+                 .build();
+
+             try {
+                 await createConnection.start();
+                 await createConnection.invoke("CreateRoom", roomName, userId;
+             } catch (err) {
+                 console.error(err.toString());
+             }
+         });
+
+    function generateUUID() {
+        // RFC4122 versiyon 4 uyumlu bir UUID oluşturur
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
         }
-    });
-
-    document.getElementById('create-room-button').addEventListener('click', async function() {
-        const roomName = prompt("Oda ismini girin:");
-        if (!roomName) {
-            console.error("Oda ismi boş bırakılamaz.");
-            return;
-        }
-
-        const createConnection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7021/hubs/roomHub")
-            .build();
-
-        try {
-            await createConnection.start();
-            await createConnection.invoke("CreateRoom", roomName);
-        } catch (err) {
-            console.error(err.toString());
-        }
-    });
-
-const joinRoomButtons = document.getElementsByClassName('join-room-button');
-Array.from(joinRoomButtons).forEach(button => {
-    button.addEventListener('click', async function() {
-        const roomId = this.getAttribute('data-room-id');
-        console.log(`Odaya katıl: ${roomId}`);
-        // Burada odaya katılma işlemini gerçekleştirin
-        try {
-            const createConnection = new signalR.HubConnectionBuilder()
-                .withUrl("https://localhost:7021/hubs/userRoomHub")
-                .build();
-
-            await createConnection.start();
-            await createConnection.invoke("InRoomUser", roomId);
-        } catch (err) {
-            console.error(err.toString());
-        }
-    });
-});
-
-
-
+        return null;
+    }
 </script>

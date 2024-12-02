@@ -20,11 +20,11 @@ namespace TicTacToe_With_SignalR_Api.Hubs
 
             return list;
         }
-        public async Task<string> CreateRoom(string roomName) 
+        public async Task<string> CreateRoom(string roomName,string userId) 
         {
             Room room = new Room();
             room.Name = roomName;
-            room.CreatedUserId = Context.ConnectionId;
+            room.CreatedUserId = userId;
             room.Id = Guid.NewGuid().ToString();
 
             await _context.Rooms.AddAsync(room);

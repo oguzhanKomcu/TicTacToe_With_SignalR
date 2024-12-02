@@ -15,7 +15,7 @@ namespace TicTacToe_With_SignalR_Web.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Create", "User");
         }
 
         public IActionResult Privacy()
